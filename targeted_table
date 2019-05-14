@@ -1,0 +1,19 @@
+SELECT 
+o.user_id, 
+count(o.order_id),
+sum(o.box*days_of_subscription),
+sum(case when lunch_type="Deluxe Lunch" 
+    then o.box*days_of_subscription else 0 end) AS total_deluxe_boxes, sum(case when lunch_type="Basic Lunch" 
+    then o.box*days_of_subscription else 0 end) AS total_basic_boxes, sum(case when lunch_type="Healthy Lunch" 
+    then o.box*days_of_subscription else 0 end) AS total_healthy_boxes, sum(deliver),
+sum(o.box*days_of_subscription)-sum(deliver),
+sum(total_delvry * cashback)
+FROM orders o
+LEFT JOIN(SELECT order_id, delivery_id,
+          COUNT(delivery_id) as total_delvry,
+          sum(box) AS deliver 
+          FROM deliveries 
+          GROUP BY order_id)d ON d.order_id = o.order_id
+LEFT JOIN cashback
+ON cashback.delivery_id = d.delivery_id
+GROUP BY user_id
